@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
+        crossorigin="anonymous"></script>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+</head>
+
+<body>
+
+    <div class="container mt-5">
+        <h1 class="text-center">Todo List</h1>
+        <div class="row mt-5">
+            <div class="col-5">
+                <h3>Todo List</h3>
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Task</th>
+                            <th>Status</th>
+                            <th>Deadline</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        <tr>
+                            <% list.forEach(val=> { %>
+                        <tr>
+                            <td>
+                                <%= val.task %>
+                            </td>
+                            <td>
+                                <%= val.status %>
+                            </td>
+                            <td>
+                                <%= val.deadline %>
+                            </td>
+                            <td><button class="btn btn-primary" data-bs-toggle="modal"
+                                    data-bs-target="#editModel-<%= val._id %>">
+                                    Edit
+                                </button>
+                                <button class="btn btn-danger" onclick="delete_task('<%=val._id%>')">delete</button>
+
+                                <!-- Modal -->
+                                <div class="modal fade" id="editModel-<%= val._id %>" tabindex="-1"
+                                    aria-labelledby="exampleModalLabel" aria-hidden="true">
+                                    <div class="modal-dialog">
+                                        <div class="modal-content">
+                                            <div class="modal-header">
+                                                <h1 class="modal-title fs-5" id="exampleModalLabel">Modal title</h1>
+                                                <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                                    aria-label="Close"></button>
+                                            </div>
+                                            <div class="modal-body">
+                                                <form id="editForm-<%= val._id %>">
+                                                    <div class="mb-3">
+                                                        <label class="form-label">Task</label>
+                                                        <input type="text" name="task" value="<%= val.task %>"
+                                                            class="form-control">
+                                                    </div>
+                                                    <div class="mb-3">
+                                                        <label class="form-label">Status</label>
+                                                        <input type="text" value="<%= val.status %>" name="status"
+                                                            class="form-control">
+                                                    </div>
+                                                    <div class="mb-3">
+                                                        <label class="form-label">Deadline</label>
+                                                        <input type="datetime-local" name="deadline"
+                                                            value="<%= val.deadline%>" class="form-control">
+                                                    </div>
+                                                </form>
+                                            </div>
+                                            <div class="modal-footer">
+                                                <button type="button" class="btn btn-secondary"
+                                                    data-bs-dismiss="modal">Close</button>
+                                                <button type="button" onclick="update_task('<%= val._id%>')"
+                                                    class="btn btn-primary">Save changes</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                        <% }) %>
+                            </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="col-2"></div>
+            <div class="col-5">
+                <h3>Add Task</h3>
+
+                <form method="post" action="http://localhost:3001/v1/todo/create">
+                    <div class="mb-3">
+                        <label class="form-label">Task</label>
+                        <input type="text" name="task" class="form-control">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Status</label>
+                        <input type="text" name="status" class="form-control">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Deadline</label>
+                        <input type="datetime-local" name="deadline" class="form-control">
+                    </div>
+                    <button type="submit" class="btn btn-primary">Submit</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+
+
+    <script>
+       async function delete_task(id) {
+            let res = await fetch(`http://localhost:3001/v1/todo/delete/${id}`, {
+                method: 'DELETE',
+                headers: {
+                    'content-type': 'application/json'
+                }                
+            })
+            location.reload()
+        }
+
+        async function update_task(id) {
+            const form = document.getElementById(`editForm-${id}`);
+            const formData = new FormData(form)
+
+            const data = {
+                task: formData.get('task'),
+                status: formData.get('status'),
+                deadline: formData.get('deadline')
+            }
+
+            try {
+                const res = await fetch(`http://localhost:3001/v1/todo/update/${id}`, {
+                    method: "PUT",
+                    headers: {
+                        'content-type':'application/json'
+                    },
+                    body:JSON.stringify(data)
+                });
+                location.reload()
+            } catch (error) {
+                console.log(error,"error");                
+            }
+        }
+    </script>
+
+</body>
+
+</html>
